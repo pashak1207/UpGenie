@@ -9,13 +9,13 @@
     "default_icon": "assets/icon-64.png"
   },
   "background": {
-    "service_worker": "background/background.ts",
+    "service_worker": "assets/background.js",
     "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["https://www.upwork.com/*"],
-      "js": ["content/content.ts"],
+      "js": ["assets/content.js"],
       "run_at": "document_idle"
     }
   ],
