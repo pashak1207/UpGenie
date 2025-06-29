@@ -1,0 +1,18 @@
+{
+  "name": "upgenie",
+  "version": "1.0.0",
+  "description": "**UpGenie** is a browser extension and SaaS platform that automates the creation of personalized job proposals on Upwork using GPT-4o.   It helps freelancers streamline the application process and improve response rates with well-crafted, context-aware submissions — in seconds.",
+  "main": "index.js",
+  "scripts": {
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chrome": "^0.0.328",
+    "sass": "^1.89.2",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  }
+}

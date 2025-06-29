@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "UpGenie — AI Proposal Generator",
+  "description": "Generate job proposals on Upwork with AI in one click.",
+  "version": "0.1",
+  "permissions": ["storage", "scripting", "activeTab"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": "assets/icon-64.png"
+  },
+  "background": {
+    "service_worker": "background/background.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.upwork.com/*"],
+      "js": ["content/content.ts"]
+    }
+  ],
+  "icons": {
+    "128": "assets/icon-64.png"
+  }
+}
