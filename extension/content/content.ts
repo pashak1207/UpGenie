@@ -105,23 +105,38 @@ const insertGenieButton = async (textarea: HTMLTextAreaElement) => {
   textarea.parentElement?.parentElement?.appendChild(genieButton);
 
   genieButton.addEventListener("click", async () => {
-    const settings = await chrome.storage.local.get(["bio", "userToken"]);
+    if (!genieButton) return;
 
-    const response = await fetch("https://api.upgenie.ai/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${settings.userToken}`,
-      },
-      body: JSON.stringify({
-        jobText: parsedJobText,
-        bio: settings.bio,
-      }),
-    });
+    const originalText = genieButton.textContent;
+    genieButton.textContent = "⏳ Generating...";
+    genieButton.disabled = true;
+    genieButton.style.opacity = "0.6";
 
-    const data = await response.json();
-    const result = data.result?.trim() || "";
-    textarea.value = result;
+    try {
+      const settings = await chrome.storage.local.get(["bio", "userToken"]);
+
+      // const response = await fetch("https://api.upgenie.ai/generate", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${settings.userToken}`,
+      //   },
+      //   body: JSON.stringify({
+      //     jobText: parsedJobText,
+      //     bio: settings.bio,
+      //   }),
+      // });
+
+      // const data = await response.json();
+      // const result = data.result?.trim() || "";
+      // textarea.value = result;
+    } catch (err) {
+      console.error("❌ Error generating proposal:", err);
+    } finally {
+      genieButton.textContent = originalText;
+      genieButton.disabled = false;
+      genieButton.style.opacity = "1";
+    }
   });
 };
 
