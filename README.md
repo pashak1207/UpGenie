@@ -84,8 +84,6 @@ npm install
 
 • Firefox & Safari versions
 
-• Proposal tone presets (e.g. friendly, formal, expert)
-
 • Fiverr / Freelancer parsing support
 
 • In-dashboard proposal history

@@ -15,7 +15,8 @@
   "content_scripts": [
     {
       "matches": ["https://www.upwork.com/*"],
-      "js": ["content/content.ts"]
+      "js": ["content/content.ts"],
+      "run_at": "document_idle"
     }
   ],
   "icons": {
