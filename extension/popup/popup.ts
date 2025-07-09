@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "utils/fetchWithAuth";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import "./popup.scss";
 
 document.addEventListener("DOMContentLoaded", async () => {
