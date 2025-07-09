@@ -7,10 +7,9 @@ chrome.runtime.onInstalled.addListener(() => {
     }
   });
 
-  chrome.storage.local.get(["bio", "autoGenerate"]).then((res) => {
+  chrome.storage.local.get(["bio"]).then((res) => {
     chrome.storage.local.set({
       bio: res.bio || "",
-      autoGenerate: res.autoGenerate ?? false,
     });
   });
 });
@@ -18,12 +17,6 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const asyncHandler = async () => {
     switch (message.type) {
-      case "getUserToken": {
-        const { userToken } = await chrome.storage.local.get("userToken");
-        sendResponse({ token: userToken });
-        break;
-      }
-
       case "trackUsage": {
         const { usedToday } = await chrome.storage.local.get("usedToday");
         const newCount = (usedToday || 0) + 1;
@@ -38,15 +31,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         break;
       }
 
-      case "getSettings": {
-        const settings = await chrome.storage.local.get([
-          "bio",
-          "autoGenerate",
-          "userToken",
-          "usedToday",
-        ]);
-        sendResponse({ settings });
-        break;
+      case "getSessionToken": {
+        chrome.cookies.get(
+          {
+            url: "https://upgenie.online",
+            name: "__Secure-next-auth.session-token",
+          },
+          function (cookie) {
+            if (cookie) {
+              const token = cookie.value;
+
+              chrome.storage.local.set({ token }, () => {
+                console.log("The token is saved in chrome.storage.local");
+              });
+
+              sendResponse({ token });
+            } else {
+              sendResponse({ error: "No token found" });
+            }
+          }
+        );
+
+        return true;
       }
 
       default:

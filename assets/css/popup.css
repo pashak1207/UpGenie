@@ -1,0 +1,101 @@
+@font-face {
+  font-family: "Neue Montreal";
+  src: local("Neue Montreal Regular"), local("Neue-Montreal-Regular"), url("NeueMontreal-Regular.woff2") format("woff2"), url("NeueMontreal-Regular.woff") format("woff"), url("NeueMontreal-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+html {
+  background: #eee;
+  width: 300px;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Neue Montreal", sans-serif;
+  padding: 1rem;
+  background: #fff;
+  width: 300px;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+}
+body > * {
+  position: relative;
+  z-index: 1;
+}
+body textarea {
+  width: calc(100% - 1rem);
+  min-height: 80px;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 1rem;
+  resize: vertical;
+  font-family: "Neue Montreal", sans-serif;
+}
+body p {
+  color: #ff4b25;
+  margin: 0;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+body input {
+  width: calc(100% - 1rem);
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 1rem;
+  font-family: "Neue Montreal", sans-serif;
+}
+body input#github {
+  margin-bottom: 0.5rem;
+}
+body button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  font-family: "Neue Montreal", sans-serif;
+  color: #fff;
+}
+body button#logout {
+  background: #ff4b25;
+  transition: all 0.1s ease-in-out;
+}
+body button#logout:hover {
+  background: #ff5e3e;
+}
+body button#upgrade, body button#login {
+  background: #108a00;
+  transition: all 0.1s ease-in-out;
+}
+body button#upgrade:hover, body button#login:hover {
+  background: #14a800;
+}
+body textarea,
+body p,
+body input,
+body button {
+  display: none;
+}
+body button#login {
+  display: block;
+}
+body.logged textarea,
+body.logged p,
+body.logged input,
+body.logged button {
+  display: block;
+}
+body.logged button#login {
+  display: none;
+}

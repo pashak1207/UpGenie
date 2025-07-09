@@ -1,13 +1,31 @@
 @use "../assets/fonts/font" as *;
 
+html {
+  background: #eee;
+  width: 300px;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: "Neue Montreal", sans-serif;
   padding: 1rem;
   background: #fff;
   width: 300px;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
 
   textarea {
-    width: 100%;
+    width: calc(100% - 1rem);
     min-height: 80px;
     padding: 0.5rem;
     border-radius: 6px;
@@ -17,10 +35,24 @@ body {
     font-family: "Neue Montreal", sans-serif;
   }
 
-  label {
-    font-size: 14px;
+  p {
+    color: #ff4b25;
+    margin: 0;
     margin-bottom: 1rem;
-    display: block;
+    font-size: 0.9rem;
+  }
+
+  input {
+    width: calc(100% - 1rem);
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+    font-family: "Neue Montreal", sans-serif;
+
+    &#github {
+      margin-bottom: 0.5rem;
+    }
   }
 
   button {
@@ -33,16 +65,50 @@ body {
     border-radius: 12px;
     margin-bottom: 0.5rem;
     cursor: pointer;
+    font-family: "Neue Montreal", sans-serif;
+    color: #fff;
 
-    &#upgrade {
+    &#logout {
+      background: #ff4b25;
+      transition: all 0.1s ease-in-out;
+
+      &:hover {
+        background: #ff5e3e;
+      }
+    }
+
+    &#upgrade,
+    &#login {
       background: #108a00;
-      color: #fff;
-      font-family: "Neue Montreal", sans-serif;
       transition: all 0.1s ease-in-out;
 
       &:hover {
         background: #14a800;
       }
+    }
+  }
+
+  textarea,
+  p,
+  input,
+  button {
+    display: none;
+  }
+
+  button#login {
+    display: block;
+  }
+
+  &.logged {
+    textarea,
+    p,
+    input,
+    button {
+      display: block;
+    }
+
+    button#login {
+      display: none;
     }
   }
 }

@@ -7,12 +7,14 @@
     <link rel="icon" href="favicon.ico" />
   </head>
   <body>
+    <h6></h6>
     <textarea id="bio" placeholder="Your short profile"></textarea>
-    <label>
-      <input type="checkbox" id="autoGenerate" />
-      Auto-generate on page open
-    </label>
+    <input type="text" id="github" placeholder="GitHub username" />
+    <p id="githubValidation"></p>
+    <input autocomplete="name" type="text" id="name" placeholder="Name" />
+    <button id="login">Login</button>
     <button id="upgrade">Upgrade to Pro</button>
+    <button id="logout">Logout</button>
     <script type="module" src="./popup.ts"></script>
   </body>
 </html>
