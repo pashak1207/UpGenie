@@ -27,16 +27,15 @@ const waitForElement = (
   });
 };
 
-const waitForContentExpansion = async (
+const waitForContentExpansion = (
   selector: string,
   timeout = 5000
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     const start = Date.now();
-
     const interval = setInterval(() => {
       const el = document.querySelector(selector);
-      if (el && el.textContent && el.textContent.length > 100) {
+      if (el?.textContent?.length && el.textContent.length > 100) {
         clearInterval(interval);
         resolve();
       } else if (Date.now() - start > timeout) {
@@ -48,10 +47,9 @@ const waitForContentExpansion = async (
 };
 
 const parseJob = async (): Promise<IParseContent> => {
-  const moreBtn = document.querySelector(
+  const moreBtn = document.querySelector<HTMLButtonElement>(
     ".fe-job-details .air3-truncation-btn"
-  ) as HTMLButtonElement;
-
+  );
   if (moreBtn) {
     moreBtn.click();
     await waitForContentExpansion("#air3-truncation-1");
@@ -61,101 +59,77 @@ const parseJob = async (): Promise<IParseContent> => {
     document
       .querySelector(".fe-job-details .content h3")
       ?.textContent?.trim() || "";
-
   const content =
     document.querySelector("#air3-truncation-1")?.textContent?.trim() || "";
-
   const level =
     document
-      .querySelector(
-        ".fe-job-details .air3-card-section .sidebar .fe-ui-job-features [data-cy='expertise'] + strong"
-      )
+      .querySelector("[data-cy='expertise'] + strong")
       ?.textContent?.trim() || "";
 
-  return {
-    title,
-    content,
-    level,
-  };
+  parsedJobText = content;
+  return { title, content, level };
 };
 
 const insertGenieButton = async (textarea: HTMLTextAreaElement) => {
-  const formGroup = document.querySelector(
-    ".additional-details .form-group"
-  ) as HTMLDivElement;
-
-  if (formGroup) {
-    formGroup.style.textAlign = "right";
-  }
-
   if (genieButton) return;
 
   genieButton = document.createElement("button");
   genieButton.textContent = "✨ UpGenie";
-  genieButton.style.marginTop = "8px";
-  genieButton.style.marginBottom = "32px";
-  genieButton.style.padding = "6px 12px";
-  genieButton.style.fontSize = "13px";
-  genieButton.style.border = "none";
-  genieButton.style.borderRadius = "4px";
-  genieButton.style.background = "#10a37f";
-  genieButton.style.color = "white";
-  genieButton.style.cursor = "pointer";
+  Object.assign(genieButton.style, {
+    marginTop: "8px",
+    marginBottom: "32px",
+    padding: "6px 12px",
+    fontSize: "13px",
+    border: "none",
+    borderRadius: "4px",
+    background: "#10a37f",
+    color: "white",
+    cursor: "pointer",
+  });
 
   textarea.parentElement?.parentElement?.appendChild(genieButton);
 
   genieButton.addEventListener("click", async () => {
-    if (!genieButton) return;
-
-    const originalText = genieButton.textContent;
-    genieButton.textContent = "⏳ Generating...";
-    genieButton.disabled = true;
-    genieButton.style.opacity = "0.6";
+    const originalText = genieButton!.textContent;
+    genieButton!.textContent = "⏳ Generating...";
+    genieButton!.disabled = true;
+    genieButton!.style.opacity = "0.6";
 
     try {
-      const settings = await chrome.storage.local.get([
+      const {
+        bio,
+        token,
+        usedCount = 0,
+        feedbackGiven = false,
+      } = await chrome.storage.local.get([
         "bio",
         "token",
         "usedCount",
         "feedbackGiven",
       ]);
 
-      const usedCount = settings.usedCount || 0;
-      const feedbackGiven = settings.feedbackGiven || false;
-
-      // const response = await fetch("https://api.upgenie.ai/generate", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${settings.userToken}`,
-      //   },
-      //   body: JSON.stringify({
-      //     jobText: parsedJobText,
-      //     bio: settings.bio,
-      //   }),
-      // });
-
+      // Placeholder for actual generation
+      // const response = await fetch("https://api.upgenie.ai/generate", { ... })
       // const data = await response.json();
-      // const result = data.result?.trim() || "";
-      // textarea.value = result;
+      // textarea.value = data.result?.trim() || "";
 
-      const newCount = usedCount + 1;
-      await chrome.storage.local.set({ usedCount: newCount });
+      await chrome.storage.local.set({ usedCount: usedCount + 1 });
 
-      if (newCount === 5 && !feedbackGiven) {
-        showFeedbackPrompt(async (feedback: string) => {
+      // if (usedCount + 1 === 5 && !feedbackGiven) {
+      if (false) {
+        showFeedbackPrompt(async (feedback) => {
           try {
             await fetch("https://api.upgenie.ai/feedback", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${settings.userToken}`,
+                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ feedback }),
             });
 
             await chrome.storage.local.set({
-              uses_left: newCount + 2,
+              uses_left: usedCount + 3,
               feedbackGiven: true,
             });
           } catch (err) {
@@ -166,59 +140,41 @@ const insertGenieButton = async (textarea: HTMLTextAreaElement) => {
     } catch (err) {
       console.error("❌ Error generating proposal:", err);
     } finally {
-      genieButton.textContent = originalText;
-      genieButton.disabled = false;
-      genieButton.style.opacity = "1";
+      genieButton!.textContent = originalText;
+      genieButton!.disabled = false;
+      genieButton!.style.opacity = "1";
     }
   });
 };
 
-let isJobVisible = false;
-
 const observeJobDetails = () => {
-  const root = document.body;
-
   const observer = new MutationObserver(async () => {
     const jobContainer = document.querySelector(".fe-job-details");
-
-    if (jobContainer && !isJobVisible) {
-      isJobVisible = true;
-
+    if (jobContainer && !genieButton) {
       try {
         const parsed = await parseJob();
-
         if (parsed.title && parsed.content) {
           const textarea = (await waitForElement(
             ".cover-letter-area .textarea-wrapper textarea.air3-textarea"
           )) as HTMLTextAreaElement;
-
           await insertGenieButton(textarea);
-        } else {
-          console.warn(
-            "⚠️ Missing title or content. Skipping button insertion."
-          );
         }
       } catch (err) {
         console.warn("⚠️ Failed to parse job:", err);
       }
     }
-
-    if (!jobContainer && isJobVisible) {
-      isJobVisible = false;
-      console.log("🔴 Job details panel closed");
-    }
   });
 
-  observer.observe(root, {
+  observer.observe(document.body, {
     childList: true,
     subtree: true,
   });
 };
+
 observeJobDetails();
 
-function showFeedbackPrompt(onSubmit: (feedback: string) => void) {
-  const existingModal = document.getElementById("upgenie-feedback-modal");
-  if (existingModal) return;
+const showFeedbackPrompt = (onSubmit: (feedback: string) => void) => {
+  if (document.getElementById("upgenie-feedback-modal")) return;
 
   const modalCont = document.createElement("div");
   modalCont.id = "upgenie-feedback-modal-cont";
@@ -227,9 +183,6 @@ function showFeedbackPrompt(onSubmit: (feedback: string) => void) {
     inset: 0;
     z-index: 999999;
     background: rgba(0, 0, 0, 0.6);
-    padding: 20px;
-    width: 100%;
-    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,12 +196,12 @@ function showFeedbackPrompt(onSubmit: (feedback: string) => void) {
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     width: 320px;
-    font-family: "Neue Montreal", sans-serif;
+    font-family: sans-serif;
   `;
 
   modal.innerHTML = `
     <h3 style="margin-top: 0; text-align: center;">We'd love your feedback! 💬</h3>
-    <p style="font-size: 14px; text-align: center;">Tell us what you think and get <b>2 bonus uses</b> as a thank you.</p>
+    <p style="font-size: 14px; text-align: center;">Tell us what you think and get <b>2 bonus uses</b>.</p>
     <textarea placeholder="Your feedback..." style="width: 100%; height: 80px; margin-top: 10px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; resize: vertical;"></textarea>
     <div style="text-align: right; margin-top: 12px;">
       <button id="upgenie-feedback-cancel" style="margin-right: 8px;">Cancel</button>
@@ -261,10 +214,7 @@ function showFeedbackPrompt(onSubmit: (feedback: string) => void) {
 
   modal
     .querySelector("#upgenie-feedback-cancel")
-    ?.addEventListener("click", () => {
-      modalCont.remove();
-    });
-
+    ?.addEventListener("click", () => modalCont.remove());
   modal
     .querySelector("#upgenie-feedback-submit")
     ?.addEventListener("click", () => {
@@ -276,4 +226,4 @@ function showFeedbackPrompt(onSubmit: (feedback: string) => void) {
         onSubmit(feedback);
       }
     });
-}
+};

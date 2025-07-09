@@ -1,9 +1,22 @@
 import "./popup.scss";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const textarea = document.getElementById("bio") as HTMLTextAreaElement | null;
+  const loginBtn = document.getElementById("login") as HTMLButtonElement | null;
+  const logoutBtn = document.getElementById(
+    "logout"
+  ) as HTMLButtonElement | null;
+  const githubInput = document.getElementById(
+    "github"
+  ) as HTMLInputElement | null;
+  const nameInput = document.getElementById("name") as HTMLInputElement | null;
+  const validationMessage = document.getElementById(
+    "githubValidation"
+  ) as HTMLParagraphElement | null;
+
+  // 1. Get token from popup message
   window.addEventListener("message", (event) => {
     const { type, token } = event.data || {};
-
     if (type === "token" && token) {
       chrome.storage.local.set({ token }, () => {
         document.body.classList.add("logged");
@@ -11,75 +24,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  const data = await chrome.storage.local.get([
+  // 2. Init
+  const { bio, token, name, githubUsername } = await chrome.storage.local.get([
     "bio",
     "token",
     "name",
     "githubUsername",
   ]);
-  const textarea = document.getElementById("bio") as HTMLTextAreaElement;
-  const loginBtn = document.getElementById("login") as HTMLButtonElement;
-  const logoutBtn = document.getElementById("logout") as HTMLButtonElement;
-  const githubInput = document.getElementById("github") as HTMLInputElement;
-  const nameInput = document.getElementById("name") as HTMLInputElement;
 
-  if (data.bio) textarea.value = data.bio;
-  if (data.githubUsername) githubInput.value = data.githubUsername;
-  if (data.name) nameInput.value = data.name;
+  if (textarea) textarea.value = bio || "";
+  if (nameInput) nameInput.value = name || "";
+  if (githubInput) githubInput.value = githubUsername || "";
 
-  if (!data.token) {
-    document.body.classList.remove("logged");
-  } else {
-    document.body.classList.add("logged");
-  }
+  document.body.classList.toggle("logged", Boolean(token));
 
-  textarea?.addEventListener("input", async (e: any) => {
-    const value = e?.target?.value;
-    await chrome.storage.local.set({ bio: value });
+  // 3. Inputs handlers
+  textarea?.addEventListener("input", (e) => {
+    chrome.storage.local.set({ bio: (e.target as HTMLTextAreaElement).value });
   });
 
-  nameInput?.addEventListener("input", async (e: any) => {
-    const value = e?.target?.value;
-    await chrome.storage.local.set({ name: value });
+  nameInput?.addEventListener("input", (e) => {
+    const name = (e.target as HTMLInputElement).value;
+    chrome.storage.local.set({ name });
   });
 
-  loginBtn?.addEventListener("click", () => {
-    const popup = window.open(
-      "https://upgenie.online/sign-in?popup=1",
-      "_blank",
-      "width=500,height=600"
-    );
+  githubInput?.addEventListener("input", () => {
+    if (!githubInput || !validationMessage) return;
 
-    if (!popup) {
-      console.error("❌ Popup blocked or failed to open.");
-    }
-  });
-
-  logoutBtn?.addEventListener("click", async () => {
-    await chrome.storage.local.remove("token");
-
-    document.body.classList.remove("logged");
-  });
-
-  const validationMessage = document.getElementById(
-    "githubValidation"
-  ) as HTMLParagraphElement;
-
-  let debounceTimer: number;
-
-  githubInput?.addEventListener("input", async () => {
     clearTimeout(debounceTimer);
 
     const username = githubInput.value.trim();
 
     if (!username) {
       validationMessage.textContent = "";
-      await chrome.storage.local.set({ githubUsername: "" });
+      chrome.storage.local.set({ githubUsername: "" });
       return;
     }
 
     debounceTimer = window.setTimeout(async () => {
       validationMessage.textContent = "⏳ Checking...";
+
       try {
         const res = await fetch(
           `https://api.github.com/users/${username}/repos`
@@ -92,16 +76,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const repos = await res.json();
-        if (repos.length === 0) {
-          validationMessage.textContent = "⚠️ No public repositories found";
-        } else {
-          validationMessage.textContent = "";
-        }
+        validationMessage.textContent =
+          repos.length === 0 ? "⚠️ No public repositories found" : "";
 
         await chrome.storage.local.set({ githubUsername: username });
-      } catch (err: any) {
+      } catch {
         validationMessage.textContent = "⚠️ Network error";
       }
     }, 600);
   });
+
+  // 4. Log In
+  loginBtn?.addEventListener("click", () => {
+    const popup = window.open(
+      "https://upgenie.online/sign-in?popup=1",
+      "_blank",
+      "width=500,height=600"
+    );
+
+    if (!popup) {
+      console.error("❌ Popup blocked or failed to open.");
+    }
+  });
+
+  // 5. Log Out
+  logoutBtn?.addEventListener("click", async () => {
+    await chrome.storage.local.remove("token");
+    document.body.classList.remove("logged");
+  });
 });
+
+let debounceTimer: number;
