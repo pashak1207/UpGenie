@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "utils/fetchWithAuth";
 import "./popup.scss";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -25,27 +26,50 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // 2. Init
-  const { bio, token, name, githubUsername } = await chrome.storage.local.get([
-    "bio",
-    "token",
-    "name",
-    "githubUsername",
-  ]);
+  const { token } = await chrome.storage.local.get("token");
 
-  if (textarea) textarea.value = bio || "";
-  if (nameInput) nameInput.value = name || "";
-  if (githubInput) githubInput.value = githubUsername || "";
+  if (token) {
+    document.body.classList.add("logged");
 
-  document.body.classList.toggle("logged", Boolean(token));
+    try {
+      const userData = await fetchWithAuth("https://upgenie.online/api/me");
+
+      if (textarea) textarea.value = userData.bio || "";
+      if (nameInput) nameInput.value = userData.name || "";
+      if (githubInput) githubInput.value = userData.githubUsername || "";
+
+      chrome.storage.local.set({
+        bio: userData.bio || "",
+        name: userData.name || "",
+        githubUsername: userData.githubUsername || "",
+      });
+    } catch (err) {
+      console.error("❌ Failed to load user data:", err);
+    }
+  } else {
+    document.body.classList.remove("logged");
+  }
+
+  function saveFieldToServer(field: string, value: string) {
+    fetchWithAuth("https://upgenie.online/api/me", {
+      method: "PUT",
+      body: JSON.stringify({ [field]: value }),
+    }).catch((err) => {
+      console.error(`❌ Failed to save ${field}:`, err);
+    });
+  }
 
   // 3. Inputs handlers
   textarea?.addEventListener("input", (e) => {
-    chrome.storage.local.set({ bio: (e.target as HTMLTextAreaElement).value });
+    const bio = (e.target as HTMLTextAreaElement).value;
+    chrome.storage.local.set({ bio });
+    saveFieldToServer("bio", bio);
   });
 
   nameInput?.addEventListener("input", (e) => {
     const name = (e.target as HTMLInputElement).value;
     chrome.storage.local.set({ name });
+    saveFieldToServer("name", name);
   });
 
   githubInput?.addEventListener("input", () => {
@@ -80,6 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           repos.length === 0 ? "⚠️ No public repositories found" : "";
 
         await chrome.storage.local.set({ githubUsername: username });
+        saveFieldToServer("githubUsername", username);
       } catch {
         validationMessage.textContent = "⚠️ Network error";
       }
