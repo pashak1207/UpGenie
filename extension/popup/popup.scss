@@ -18,6 +18,10 @@ body {
   position: relative;
   overflow: hidden;
   margin: 0;
+  min-height: 385px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   & > * {
     position: relative;
@@ -25,7 +29,7 @@ body {
   }
 
   textarea {
-    width: calc(100% - 1rem);
+    width: 100%;
     min-height: 80px;
     padding: 0.5rem;
     border-radius: 6px;
@@ -43,7 +47,7 @@ body {
   }
 
   input {
-    width: calc(100% - 1rem);
+    width: 100%;
     padding: 0.5rem;
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -53,6 +57,36 @@ body {
     &#github {
       margin-bottom: 0.5rem;
     }
+  }
+
+  #avatar {
+    width: 60px;
+    height: 60px;
+    margin-inline: auto;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    margin-bottom: 20px;
+  }
+
+  .github_area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  #refresh_github {
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
   }
 
   button {
@@ -91,7 +125,9 @@ body {
   textarea,
   p,
   input,
-  button {
+  button,
+  #avatar,
+  .github_area {
     display: none;
   }
 
@@ -103,8 +139,13 @@ body {
     textarea,
     p,
     input,
-    button {
+    button,
+    #avatar {
       display: block;
+    }
+
+    .github_area {
+      display: flex;
     }
 
     button#login {
